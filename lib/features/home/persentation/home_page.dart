@@ -1,14 +1,9 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:perla/features/login/presentation/page/login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../../core/utils/shared_preferences_keys.dart';
 
 class HomePage extends StatefulWidget {
   static const kHomePath = '/home';
@@ -22,21 +17,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<Note> _notes = [];
   final TextEditingController _textController = TextEditingController();
-  bool _isAddingNote = false;
-  void debounceAddNote(String text) {
-    final date = DateTime.now();
-    if (_isAddingNote) return;
-
-    _isAddingNote = true;
-
-    final note = Note(text: text, date: date); // Create note
-
-    Timer(Duration(milliseconds: 500), () {
-      addNoteInternal(note);
-      _isAddingNote = false;
-    });
-  }
-  // SharedPreferences? sharedPreferences;
 
   void loadNotes() async {
     final prefs = await SharedPreferences.getInstance();
@@ -49,21 +29,14 @@ class _HomePageState extends State<HomePage> {
     _notes.sort((a, b) => b.date.compareTo(a.date));
     setState(() {});
   }
+
   void addNote(String text) {
+    final date = DateTime.now();
+    final note = Note(text: text, date: date);
 
-
-    debounceAddNote(text);
-    // final date = DateTime.now();
-    // final note = Note(text: text, date: date);
-    // FocusManager.instance.primaryFocus?.unfocus();
-    // addNoteInternal(note);
-
-  }
-
-  void addNoteInternal(Note note) {
     setState(() {
-      _notes.insert(0, note);
       _notes.add(note);
+      _notes.sort((a, b) => b.date.compareTo(a.date));
     });
 
     saveNotes();
@@ -100,47 +73,44 @@ class _HomePageState extends State<HomePage> {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString('notes', jsonEncode(notesJson));
   }
-  Future<void> logout() async {
-
-    final sharedPreferences = await SharedPreferences.getInstance();
-
-    await sharedPreferences.remove(SharedPreferencesKeys.apiToken);
-
-    setState(() {});
-
-    context.pushReplacement(LoginPage.kLoginPath);
-
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      // appBar: AppBar(
-      //   backgroundColor: Colors.white,
-      //   elevation: 0.0,
-      //   // title: But,
-      // ),
+      appBar: AppBar(
+        backgroundColor: const Color(0xff6C63FF),
+        elevation: 0.0,
+        // title: But,
+      ),
       drawer: Drawer(
-        child: SafeArea(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.login_outlined),
-                title: const Text('Log out'),
-                onTap: () async {
-                 await logout();
-                },
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: const [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
               ),
-            ],
-          ),
+              child: Text('Drawer Header'),
+            ),
+            ListTile(
+              leading: Icon(Icons.message),
+              title: Text('Messages'),
+            ),
+            ListTile(
+              leading: Icon(Icons.account_circle),
+              title: Text('Profile'),
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text('Settings'),
+            ),
+          ],
         ),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            SizedBox(height: 120.h,),
             Row(
               children: [
                 SizedBox(
@@ -149,14 +119,11 @@ class _HomePageState extends State<HomePage> {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: AbsorbPointer(
-                      absorbing: _isAddingNote,
-                      child: TextField(
-                        controller: _textController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: 'Enter note text',
-                        ),
+                    child: TextField(
+                      controller: _textController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Enter note text',
                       ),
                     ),
                   ),
@@ -169,10 +136,8 @@ class _HomePageState extends State<HomePage> {
                     color: const Color(0xff6C63FF),
                     child: ElevatedButton(
                       onPressed: () {
-                        setState((){
-                          addNote(_textController.text);
-                          _textController.clear();
-                        });
+                        addNote(_textController.text);
+                        _textController.clear();
                       },
                       child: const Text('Add'),
                     ),
@@ -183,10 +148,9 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
-            SizedBox(height: 30.h,),
             Container(
               color: const Color(0xffF3F4F6),
-              height: 50.h,
+              height: 40.h,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -214,7 +178,6 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-            SizedBox(height: 10.h,),
             ..._notes
                 .map(
                   (note) => NoteCard(
@@ -288,6 +251,10 @@ class _NoteCardState extends State<NoteCard> {
                       horizontal: 30.w,
                       // vertical: 15.h,
                     ),
+                    // child: Text(
+                    //   widget.note.text,
+                    //   overflow: TextOverflow.ellipsis,
+                    // ),
                     child: editMode == true
                         ? TextField(
                             controller: _textController,
