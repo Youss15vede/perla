@@ -1,9 +1,14 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:perla/features/login/presentation/page/login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../core/utils/shared_preferences_keys.dart';
 
 class HomePage extends StatefulWidget {
   static const kHomePath = '/home';
@@ -17,6 +22,20 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<Note> _notes = [];
   final TextEditingController _textController = TextEditingController();
+  bool _isAddingNote = false;
+  void debounceAddNote(String text) {
+    final date = DateTime.now();
+    if (_isAddingNote) return;
+
+    _isAddingNote = true;
+
+    final note = Note(text: text, date: date); // Create note
+
+    Timer(Duration(milliseconds: 500), () {
+      addNoteInternal(note);
+      _isAddingNote = false;
+    });
+  }
 
   void loadNotes() async {
     final prefs = await SharedPreferences.getInstance();
@@ -31,12 +50,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   void addNote(String text) {
-    final date = DateTime.now();
-    final note = Note(text: text, date: date);
+    debounceAddNote(text);
+    // final date = DateTime.now();
+    // final note = Note(text: text, date: date);
+    // FocusManager.instance.primaryFocus?.unfocus();
+    // addNoteInternal(note);
+  }
 
+  void addNoteInternal(Note note) {
     setState(() {
-      _notes.add(note);
-      _notes.sort((a, b) => b.date.compareTo(a.date));
+      _notes.insert(0, note);
+      // _notes.add(note);
     });
 
     saveNotes();
@@ -71,7 +95,17 @@ class _HomePageState extends State<HomePage> {
     final notesJson = _notes.map((n) => n.toJson()).toList();
 
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('notes', jsonEncode(notesJson));
+    await prefs.setString('notes', jsonEncode(notesJson));
+  }
+
+  Future<void> logout() async {
+    final sharedPreferences = await SharedPreferences.getInstance();
+
+    await sharedPreferences.remove(SharedPreferencesKeys.apiToken);
+
+    setState(() {});
+
+    context.pushReplacement(LoginPage.kLoginPath);
   }
 
   @override
@@ -79,51 +113,48 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xff6C63FF),
+        backgroundColor:Color(0xff6C63FF),
         elevation: 0.0,
         // title: But,
       ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: const [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
+        child: SafeArea(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.login_outlined),
+                title: const Text('Log out'),
+                onTap: () async {
+                  await logout();
+                },
               ),
-              child: Text('Drawer Header'),
-            ),
-            ListTile(
-              leading: Icon(Icons.message),
-              title: Text('Messages'),
-            ),
-            ListTile(
-              leading: Icon(Icons.account_circle),
-              title: Text('Profile'),
-            ),
-            ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Settings'),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
+            SizedBox(
+              height: 20.h,
+            ),
             Row(
               children: [
                 SizedBox(
                   width: 20.w,
                 ),
-                Expanded(
+                Flexible(
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      controller: _textController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Enter note text',
+                    child: AbsorbPointer(
+                      absorbing: _isAddingNote,
+                      child: TextField(
+                        controller: _textController,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: 'Enter note text',
+                        ),
                       ),
                     ),
                   ),
@@ -136,8 +167,10 @@ class _HomePageState extends State<HomePage> {
                     color: const Color(0xff6C63FF),
                     child: ElevatedButton(
                       onPressed: () {
-                        addNote(_textController.text);
-                        _textController.clear();
+                        setState(() {
+                          addNote(_textController.text);
+                          _textController.clear();
+                        });
                       },
                       child: const Text('Add'),
                     ),
@@ -148,9 +181,12 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
+            SizedBox(
+              height: 30.h,
+            ),
             Container(
               color: const Color(0xffF3F4F6),
-              height: 40.h,
+              height: 50.h,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -178,15 +214,18 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
+            SizedBox(
+              height: 10.h,
+            ),
             ..._notes
                 .map(
                   (note) => NoteCard(
-                    note: note,
-                    onDelete: () {
-                      deleteNote(context, note);
-                    },
-                  ),
-                )
+                note: note,
+                onDelete: () {
+                  deleteNote(context, note);
+                },
+              ),
+            )
                 .toList(),
           ],
         ),
@@ -251,29 +290,25 @@ class _NoteCardState extends State<NoteCard> {
                       horizontal: 30.w,
                       // vertical: 15.h,
                     ),
-                    // child: Text(
-                    //   widget.note.text,
-                    //   overflow: TextOverflow.ellipsis,
-                    // ),
                     child: editMode == true
                         ? TextField(
-                            controller: _textController,
-                            enabled: editMode,
-                            onChanged: (text) {
-                              if (editMode) {
-                                setState(() {
-                                  widget.note.text = text;
-                                });
-                              }
-                            },
-                          )
+                      controller: _textController,
+                      enabled: editMode,
+                      onChanged: (text) {
+                        if (editMode) {
+                          setState(() {
+                            widget.note.text = text;
+                          });
+                        }
+                      },
+                    )
                         : Padding(
-                            padding: EdgeInsets.only(top: 40.h),
-                            child: Text(
-                              widget.note.text,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
+                      padding: EdgeInsets.only(top: 40.h),
+                      child: Text(
+                        widget.note.text,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -285,7 +320,8 @@ class _NoteCardState extends State<NoteCard> {
                 children: [
                   Padding(
                     padding: EdgeInsets.only(top: 40.h),
-                    child: Text(DateFormat('d-M-y').format(widget.note.date)),
+                    child: Text(
+                        DateFormat('d-M-y', "en_US").format(widget.note.date)),
                   ),
                 ],
               ),
