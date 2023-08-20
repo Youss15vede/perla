@@ -47,7 +47,7 @@ class _HomePageState extends State<HomePage> {
       _notes = notesData.map((n) => Note.fromJson(n)).toList();
     }
     _notes.sort((a, b) => b.date.compareTo(a.date));
-    // setState(() {});
+    setState(() {});
   }
   void addNote(String text) {
 
@@ -62,6 +62,7 @@ class _HomePageState extends State<HomePage> {
 
   void addNoteInternal(Note note) {
     setState(() {
+      _notes.insert(0, note);
       _notes.add(note);
     });
 
@@ -115,11 +116,11 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.0,
-        // title: But,
-      ),
+      // appBar: AppBar(
+      //   backgroundColor: Colors.white,
+      //   elevation: 0.0,
+      //   // title: But,
+      // ),
       drawer: Drawer(
         child: SafeArea(
           child: ListView(
@@ -129,7 +130,7 @@ class _HomePageState extends State<HomePage> {
                 leading: const Icon(Icons.login_outlined),
                 title: const Text('Log out'),
                 onTap: () async {
-                 // await logout();
+                 await logout();
                 },
               ),
             ],
@@ -139,6 +140,7 @@ class _HomePageState extends State<HomePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            SizedBox(height: 120.h,),
             Row(
               children: [
                 SizedBox(
@@ -181,9 +183,10 @@ class _HomePageState extends State<HomePage> {
                 ),
               ],
             ),
+            SizedBox(height: 30.h,),
             Container(
               color: const Color(0xffF3F4F6),
-              height: 40.h,
+              height: 50.h,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -211,6 +214,7 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
+            SizedBox(height: 10.h,),
             ..._notes
                 .map(
                   (note) => NoteCard(
@@ -284,10 +288,6 @@ class _NoteCardState extends State<NoteCard> {
                       horizontal: 30.w,
                       // vertical: 15.h,
                     ),
-                    // child: Text(
-                    //   widget.note.text,
-                    //   overflow: TextOverflow.ellipsis,
-                    // ),
                     child: editMode == true
                         ? TextField(
                             controller: _textController,

@@ -35,7 +35,7 @@ class _LoginPageState extends State<LoginPage> {
         );
         if (state.success) {
           WidgetsBinding.instance.addPostFrameCallback(
-            (_) => context.push(HomePage.kHomePath),
+            (_) => context.pushReplacement(HomePage.kHomePath),
           );
         }
         return Form(
