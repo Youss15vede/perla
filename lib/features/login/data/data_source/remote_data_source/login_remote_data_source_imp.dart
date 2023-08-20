@@ -11,7 +11,6 @@ import 'package:perla/core/utils/constants.dart';
 import 'package:perla/core/utils/error_message.dart';
 import 'package:perla/features/login/data/data_source/remote_data_source/login_remote_data_source.dart';
 import 'package:perla/core/network/base_models/auth_model.dart';
-
 @LazySingleton(as: LoginRemoteDataSource)
 class LoginRemoteDataSourceImp extends BaseRemoteDataSourceImpl
     implements LoginRemoteDataSource {

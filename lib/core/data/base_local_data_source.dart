@@ -9,6 +9,10 @@ abstract class BaseLocalDataSource {
 
   Future<void> setAppColor(int value);
 
+  int getUserID();
+
+  Future<void> setUserID(int value);
+
   Future<void> setAppLanguage(int value);
 
   int getAppLanguage();
@@ -48,4 +52,13 @@ class BaseLocalDataSourceImp implements BaseLocalDataSource {
   @override
   Future<String> get token async =>
       sharedPreferences.getString(SharedPreferencesKeys.apiToken) ?? "";
+
+  @override
+  int getUserID() {
+    return sharedPreferences.getInt(SharedPreferencesKeys.userID) ?? 0;
+  }
+
+  @override
+  Future<void> setUserID(int value)async =>
+      await sharedPreferences.setInt(SharedPreferencesKeys.userID, value);
 }

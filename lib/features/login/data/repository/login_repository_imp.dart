@@ -29,6 +29,7 @@ class LoginRepositoryImp extends BaseRepositoryImpl implements LoginRepository {
       final language = _local.getAppLanguage();
       final result = await _http.login(phone: phone, password: password);
       await _local.storeUser(result);
+      // _local.getUserID();
       debugPrint('from repository we get the result :  ${result.token}');
       return Right(result);
     } on ServerException catch (e) {

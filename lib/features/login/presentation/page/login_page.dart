@@ -35,7 +35,7 @@ class _LoginPageState extends State<LoginPage> {
         );
         if (state.success) {
           WidgetsBinding.instance.addPostFrameCallback(
-            (_) => context.pushReplacement(HomePage.kHomePath),
+            (_) => context.push(HomePage.kHomePath),
           );
         }
         return Form(
@@ -93,6 +93,7 @@ class _LoginPageState extends State<LoginPage> {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         child: TextFormField(
+                          textInputAction: TextInputAction.next,
                           controller: phoneController,
                           decoration: const InputDecoration(
                             border: InputBorder.none,
@@ -130,6 +131,7 @@ class _LoginPageState extends State<LoginPage> {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         child: TextFormField(
+                          textInputAction: TextInputAction.done,
                           controller: passwordController,
                           decoration: InputDecoration(
                               border: InputBorder.none,

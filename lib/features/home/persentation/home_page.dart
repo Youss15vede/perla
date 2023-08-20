@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -21,7 +22,21 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<Note> _notes = [];
   final TextEditingController _textController = TextEditingController();
-  SharedPreferences? sharedPreferences;
+  bool _isAddingNote = false;
+  void debounceAddNote(String text) {
+    final date = DateTime.now();
+    if (_isAddingNote) return;
+
+    _isAddingNote = true;
+
+    final note = Note(text: text, date: date); // Create note
+
+    Timer(Duration(milliseconds: 500), () {
+      addNoteInternal(note);
+      _isAddingNote = false;
+    });
+  }
+  // SharedPreferences? sharedPreferences;
 
   void loadNotes() async {
     final prefs = await SharedPreferences.getInstance();
@@ -32,16 +47,22 @@ class _HomePageState extends State<HomePage> {
       _notes = notesData.map((n) => Note.fromJson(n)).toList();
     }
     _notes.sort((a, b) => b.date.compareTo(a.date));
-    setState(() {});
+    // setState(() {});
+  }
+  void addNote(String text) {
+
+
+    debounceAddNote(text);
+    // final date = DateTime.now();
+    // final note = Note(text: text, date: date);
+    // FocusManager.instance.primaryFocus?.unfocus();
+    // addNoteInternal(note);
+
   }
 
-  void addNote(String text) {
-    final date = DateTime.now();
-    final note = Note(text: text, date: date);
-
+  void addNoteInternal(Note note) {
     setState(() {
       _notes.add(note);
-      _notes.sort((a, b) => b.date.compareTo(a.date));
     });
 
     saveNotes();
@@ -108,7 +129,7 @@ class _HomePageState extends State<HomePage> {
                 leading: const Icon(Icons.login_outlined),
                 title: const Text('Log out'),
                 onTap: () async {
-                 await logout();
+                 // await logout();
                 },
               ),
             ],
@@ -126,11 +147,14 @@ class _HomePageState extends State<HomePage> {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      controller: _textController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Enter note text',
+                    child: AbsorbPointer(
+                      absorbing: _isAddingNote,
+                      child: TextField(
+                        controller: _textController,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: 'Enter note text',
+                        ),
                       ),
                     ),
                   ),
@@ -143,8 +167,10 @@ class _HomePageState extends State<HomePage> {
                     color: const Color(0xff6C63FF),
                     child: ElevatedButton(
                       onPressed: () {
-                        addNote(_textController.text);
-                        _textController.clear();
+                        setState((){
+                          addNote(_textController.text);
+                          _textController.clear();
+                        });
                       },
                       child: const Text('Add'),
                     ),

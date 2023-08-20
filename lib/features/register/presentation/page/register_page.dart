@@ -95,6 +95,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         child: TextFormField(
+                          textInputAction: TextInputAction.next,
                           controller: userNameController,
                           decoration: const InputDecoration(
                             border: InputBorder.none,
@@ -139,6 +140,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         child: TextFormField(
+                          textInputAction: TextInputAction.next,
                           controller: phoneController,
                           decoration: const InputDecoration(
                             border: InputBorder.none,
@@ -176,6 +178,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         child: TextFormField(
+                          textInputAction: TextInputAction.next,
                           controller: passwordController,
                           decoration: InputDecoration(
                               border: InputBorder.none,
@@ -227,6 +230,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         child: TextFormField(
+                          textInputAction: TextInputAction.done,
                           controller: confirmPasswordController,
                           decoration: InputDecoration(
                               border: InputBorder.none,

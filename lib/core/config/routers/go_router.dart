@@ -26,7 +26,6 @@ final GoRouter goRouter = GoRouter(
   observers: [GoRouterObserver()],
   navigatorKey: _rootNavigatorKey,
   routes: [
-
     GoRoute(
       path: SplashPage.kSplashPath,
       pageBuilder: (context, state) =>

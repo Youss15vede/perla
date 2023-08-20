@@ -6,4 +6,5 @@ class SharedPreferencesKeys{
   static const apiToken = 'api_token';
   static const loginState = "login_state";
   static const appColor = "app_color";
+  static const userID = "user_id";
 }

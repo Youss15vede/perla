@@ -35,7 +35,6 @@ class _SplashPageState extends State<SplashPage> {
               context.pushReplacement(HomePage.kHomePath);
 
         } else {
-
               context.pushReplacement(LoginPage.kLoginPath);
 
 
